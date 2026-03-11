@@ -1,8 +1,6 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-
-const JWT_SECRET = "mysecretkey";
+const generateToken = require("../utils/generateToken");
 
 exports.register = async (req, res) => {
   try {
@@ -27,7 +25,13 @@ exports.register = async (req, res) => {
 
     res.json({
       message: "User registered successfully.",
-      user,
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+      token: generateToken(user._id),
     });
   } catch (error) {
     res.status(500).json({
@@ -57,15 +61,22 @@ exports.login = async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1d" });
+    // const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1d" });
 
     res.json({
       message: "Login Successful",
-      token,
+      token: generateToken(user._id),
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
     });
   } catch (error) {
     res.status(500).json({
       message: "Error logging in.",
+      error: error.message,
     });
   }
 };

@@ -1,17 +1,25 @@
+const mongoose = require("mongoose");
 const Task = require("../models/taskModel");
 
 exports.getTasks = async (req, res) => {
-  const tasks = await Task.find();
-
-  res.json(tasks);
+  try {
+    const tasks = await Task.find();
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching tasks.",
+      error: error.message,
+    });
+  }
 };
 
 exports.createTask = async (req, res) => {
   try {
     const task = await Task.create({
       title: req.body.title,
+      completed: req.body.completed || false,
     });
-    res.json({
+    res.status(201).json({
       message: "Task created successfully.",
       task,
     });
@@ -32,12 +40,14 @@ exports.createTask = async (req, res) => {
 };
 
 exports.deleteTask = async (req, res) => {
-  console.log("Delete Task ID:", req.params.id); // Log the ID being deleted
   try {
-    const id = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid Task ID",
+      });
+    }
 
-    // tasks = tasks.filter((task) => task.id !== id);
-    const deletedTask = await Task.findByIdAndDelete(id);
+    const deletedTask = await Task.findByIdAndDelete(req.params.id);
 
     if (!deletedTask) {
       return res.status(404).json({
@@ -58,9 +68,13 @@ exports.deleteTask = async (req, res) => {
 
 exports.updateTask = async (req, res) => {
   try {
-    const id = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid Task ID",
+      });
+    }
 
-    const updatedTask = await Task.findByIdAndUpdate(id, req.body, {
+    const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
 
@@ -76,7 +90,7 @@ exports.updateTask = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "Server Error",
+      message: "Error updating task",
       error: error.message,
     });
   }
