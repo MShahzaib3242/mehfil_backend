@@ -15,7 +15,7 @@ exports.getTasks = async (req, res) => {
   }
 };
 
-exports.createTask = async (req, res) => {
+exports.createTask = async (req, res, next) => {
   try {
     const task = await taskService.createTask(req.user.id, req.body);
 
@@ -24,10 +24,11 @@ exports.createTask = async (req, res) => {
       task,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error Creating Task.",
-      error: error.message,
-    });
+    // res.status(500).json({
+    //   message: "Error Creating Task.",
+    //   error: error.message,
+    // });
+    next(error);
   }
 };
 
