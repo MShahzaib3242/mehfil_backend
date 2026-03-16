@@ -1,19 +1,132 @@
-## Task Manager in Node JS
+# Mehfil — Where Stories Come Alive
 
-This is a full backend containing following features:
+Mehfil is a modern **social media platform backend** where users can share posts, follow others, interact through likes and comments, and view a personalized feed.
 
-# Node.js server
+The project demonstrates a **scalable backend architecture** using Node.js, MongoDB, Redis, BullMQ, and Docker.
 
-# Express routing
+---
 
-# MongoDB database
+# 🚀 Features
 
-# Mongoose models
+- User Authentication (JWT)
+- User Profiles
+- Follow / Unfollow Users
+- Create & Delete Posts
+- Like / Unlike Posts
+- Comment System
+- Personalized User Feed
+- Redis Caching
+- Background Jobs with BullMQ
+- BullMQ Dashboard
+- Dockerized Infrastructure
+- Swagger API Documentation
 
-# CRUD APIs
+---
 
-# Authentication
+# 🏗 Tech Stack
 
-# JWT security
+**Backend**
 
-# Protected routes
+- Node.js
+- Express.js
+
+**Database**
+
+- MongoDB
+- Mongoose
+
+**Caching**
+
+- Redis
+
+**Queue System**
+
+- BullMQ
+
+**Authentication**
+
+- JWT
+- bcrypt
+
+**Infrastructure**
+
+- Docker
+- Docker Compose
+
+**API Documentation**
+
+- Swagger
+
+---
+
+# 📂 Project Structure
+
+```
+mehfil-backend
+│
+├── controllers
+├── services
+├── models
+├── routes
+├── middleware
+├── config
+├── queues
+├── workers
+└── utils
+```
+
+Architecture follows:
+
+```
+Routes → Controllers → Services → Database
+```
+
+---
+
+# 📌 Core API Endpoints
+
+### Auth
+
+```
+POST /api/auth/register
+POST /api/auth/login
+```
+
+### Posts
+
+```
+POST /api/posts
+GET /api/posts/:id
+DELETE /api/posts/:id
+```
+
+### Social Features
+
+```
+POST /api/users/:id/follow
+DELETE /api/users/:id/unfollow
+POST /api/posts/:postId/like
+POST /api/posts/:postId/comments
+```
+
+### Feed
+
+```
+GET /api/feed
+```
+
+---
+
+# 🛠 Future Improvements
+
+- Scheduled Posts
+- Real-time Notifications
+- Image Uploads
+- Trending Posts
+- Messaging System
+
+---
+
+# 👨‍💻 Author
+
+**Muhammad Shahzaib**
