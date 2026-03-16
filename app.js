@@ -7,10 +7,12 @@ const swaggerSpec = require("./config/swagger");
 const { serverAdapter } = require("./config/bullBoard");
 
 // All Routes
-const taskRoutes = require("./routes/taskRoutes");
 const authRoutes = require("./routes/authRoutes");
 const followRoutes = require("./routes/followRoutes");
 const postRoutes = require("./routes/postRoutes");
+const likeRoutes = require("./routes/likeRoutes");
+const commentRoutes = require("./routes/commentRoutes");
+const feedRoutes = require("./routes/feedRoutes");
 
 const errorMiddleware = require("./middleware/errorMiddleware");
 const errorHandler = require("./middleware/errorHandler");
@@ -42,10 +44,12 @@ app.get("/", (req, res) => {
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/admin/queues", serverAdapter.getRouter());
-app.use("/api/tasks", taskRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", followRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/posts", likeRoutes);
+app.use("/api/posts", commentRoutes);
+app.use("/api/feed", feedRoutes);
 
 app.use(errorHandler);
 app.use(errorMiddleware);
