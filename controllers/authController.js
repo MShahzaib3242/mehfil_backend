@@ -4,7 +4,7 @@ const generateToken = require("../utils/generateToken");
 
 exports.register = async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { name, username, email, password, bio, avatar } = req.body;
 
     const userExists = await User.findOne({ email });
 
@@ -14,23 +14,26 @@ exports.register = async (req, res) => {
       });
     }
 
+    const existingUsername = await User.findOne({ username });
+
+    if (existingUsername) {
+      throw new ApiError(400, "Username already taken.");
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      firstName,
-      lastName,
+      name,
+      username,
       email,
       password: hashedPassword,
+      bio: bio || "",
+      avatar: avatar || "",
     });
 
-    res.json({
+    res.status(201).json({
       message: "User registered successfully.",
-      user: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-      },
+      user,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -66,12 +69,7 @@ exports.login = async (req, res) => {
     res.json({
       message: "Login Successful",
       token: generateToken(user._id),
-      user: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-      },
+      user,
     });
   } catch (error) {
     res.status(500).json({
