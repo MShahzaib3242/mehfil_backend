@@ -21,11 +21,13 @@ const app = express();
 
 app.use(express.json());
 app.use(helmet());
-app.use(
-  cors({
-    origin: "http://localhost:3001",
-  }),
-);
+// app.use(
+//   cors({
+//     origin: "http://localhost:3001",
+//   }),
+// );
+
+app.use(cors({ origin: "*" }));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
