@@ -13,6 +13,7 @@ const postRoutes = require("./routes/postRoutes");
 const likeRoutes = require("./routes/likeRoutes");
 const commentRoutes = require("./routes/commentRoutes");
 const feedRoutes = require("./routes/feedRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const errorMiddleware = require("./middleware/errorMiddleware");
 const errorHandler = require("./middleware/errorHandler");
@@ -52,6 +53,7 @@ app.use("/api/posts", postRoutes);
 app.use("/api/posts", likeRoutes);
 app.use("/api/posts", commentRoutes);
 app.use("/api/feed", feedRoutes);
+app.use("/api/users", userRoutes);
 
 app.use(errorHandler);
 app.use(errorMiddleware);
