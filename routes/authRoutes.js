@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const authController = require("../controllers/authController");
+const { checkUsernameAvailability } = require("../controllers/authController");
 
 /**
  * @swagger
@@ -27,5 +28,6 @@ const authController = require("../controllers/authController");
 
 router.post("/login", authController.login);
 router.post("/register", authController.register);
+router.get("/check-username/:username", checkUsernameAvailability);
 
 module.exports = router;
