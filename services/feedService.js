@@ -8,13 +8,18 @@ exports.getFeed = async (userId, page = 1, limit = 10) => {
 
   const followingIds = following.map((f) => f.following);
 
+  const authorIds = [userId, ...followingIds];
+
   const posts = await Post.find({
-    author: { $in: followingIds },
+    author: { $in: authorIds },
   })
     .populate("author", "username name avatar")
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit);
 
-  return posts;
+  return {
+    posts,
+    hasFollowing: followingIds.length > 0,
+  };
 };

@@ -35,6 +35,20 @@ exports.deletePost = async (req, res, next) => {
   }
 };
 
+exports.updatePost = async (req, res, next) => {
+  try {
+    const post = await postService.updatePost(
+      req.params.id,
+      req.user.id,
+      req.body,
+    );
+
+    res.json(post);
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.getUserPosts = async (req, res, next) => {
   try {
     const posts = await postService.getUserPosts(req.params.id);

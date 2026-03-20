@@ -25,22 +25,40 @@ exports.getPost = async (postId) => {
 };
 
 exports.deletePost = async (postId, userId) => {
-  const post = await Post.findOne({
-    _id: postId,
-    author: userId,
-  });
+  const post = await Post.findById(postId);
 
   if (!post) {
-    throw new ApiError(404, "Post not found or unauthorized.");
+    throw new ApiError(404, "Post not found");
+  }
+
+  if (post.author.toString() !== userId) {
+    throw new ApiError(403, "Not Authorized");
   }
 
   await post.deleteOne();
+};
 
-  return true;
+exports.updatePost = async (postId, userId, data) => {
+  const post = await Post.findById(postId);
+
+  if (!post) throw new ApiError(404, "Post not found");
+
+  if (post.author.toString() !== userId) {
+    throw new ApiError(403, "Not Authorized");
+  }
+
+  post.content = data.content ?? post.content;
+  post.image = data.image ?? post.image;
+
+  await post.save();
+
+  return post;
 };
 
 exports.getUserPosts = async (userId) => {
-  return Post.find({ author: userId })
+  const posts = await Post.find({ author: userId })
     .sort({ createdAt: -1 })
     .populate("author", "username name avatar");
+
+  return { posts };
 };

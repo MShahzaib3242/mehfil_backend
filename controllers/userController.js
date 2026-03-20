@@ -1,4 +1,7 @@
 const User = require("../models/userModel");
+const userService = require("../services/userService");
+const cloudinary = require("../config/cloudinary");
+const streamifier = require("streamifier");
 
 exports.getMe = async (req, res) => {
   try {
@@ -9,5 +12,49 @@ exports.getMe = async (req, res) => {
       message: "Error fetching user",
       error: error.message,
     });
+  }
+};
+
+exports.updateProfile = async (req, res, next) => {
+  try {
+    let avatarUrl;
+
+    console.log("FILE:", req.file);
+
+    if (req.file) {
+      const uploadFromBuffer = () =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "mehfil/avatars" },
+            (error, result) => {
+              if (result) resolve(result);
+              else reject(error);
+            },
+          );
+
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+
+      const result = await uploadFromBuffer();
+      avatarUrl = result.secure_url;
+    }
+
+    const user = await userService.updateProfile(req.user.id, {
+      ...req.body,
+      avatar: avatarUrl,
+    });
+
+    res.json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getSuggestedUsers = async (req, res, next) => {
+  try {
+    const users = await userService.getSuggestedUsers(req.user.id);
+    res.json(users);
+  } catch (error) {
+    next(error);
   }
 };

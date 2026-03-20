@@ -8,7 +8,9 @@ router.post("/", authMiddleware, postController.createPost);
 
 router.get("/:id", postController.getPost);
 
-router.delete("/:id".authMiddleware, postController.deletePost);
+router.delete("/:id", authMiddleware, postController.deletePost);
+
+router.put("/:id", authMiddleware, postController.updatePost);
 
 router.get("/user/:id", postController.getUserPosts);
 
