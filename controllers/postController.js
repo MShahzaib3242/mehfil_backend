@@ -1,13 +1,36 @@
 const postService = require("../services/postService");
+const cloudinary = require("../config/cloudinary");
+const streamifier = require("streamifier");
 
 exports.createPost = async (req, res, next) => {
   try {
-    const post = await postService.createPost(req.user.id, req.body);
+    let imageUrls = [];
 
-    res.status(201).json({
-      message: "Post created successfully.",
-      post,
+    if (req.files && req.files.length > 0) {
+      const uploadPromises = req.files.map((file) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "mehfil/posts" },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result.secure_url);
+            },
+          );
+
+          streamifier.createReadStream(file.buffer).pipe(stream);
+        });
+      });
+
+      imageUrls = await Promise.all(uploadPromises);
+    }
+
+    const post = await postService.createPost({
+      author: req.user.id,
+      content: req.body.content,
+      images: imageUrls,
     });
+
+    res.json(post);
   } catch (error) {
     next(error);
   }
@@ -37,13 +60,44 @@ exports.deletePost = async (req, res, next) => {
 
 exports.updatePost = async (req, res, next) => {
   try {
-    const post = await postService.updatePost(
+    let imageUrls = [];
+
+    if (req.files && req.files.length > 0) {
+      const uploadPromises = req.files.map((file) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "mehfil/posts" },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result.secure_url);
+            },
+          );
+
+          streamifier.createReadStream(file.buffer).pipe(stream);
+        });
+      });
+
+      imageUrls = await Promise.all(uploadPromises);
+    }
+
+    let existingImages = [];
+
+    if (req.body.existingImages) {
+      existingImages = JSON.parse(req.body.existingImages);
+    }
+
+    const finalImages = [...existingImages, ...imageUrls];
+
+    const updatedPost = await postService.updatePost(
       req.params.id,
       req.user.id,
-      req.body,
+      {
+        content: req.body.content,
+        images: finalImages,
+      },
     );
 
-    res.json(post);
+    res.json(updatedPost);
   } catch (error) {
     next(error);
   }

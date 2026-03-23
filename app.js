@@ -20,6 +20,11 @@ const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
+app.use((req, res, next) => {
+  console.log("GLOBAL HIT:", req.method, req.url);
+  next();
+});
+
 app.use(express.json());
 app.use(helmet());
 // app.use(

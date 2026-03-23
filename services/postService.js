@@ -1,14 +1,14 @@
 const Post = require("../models/postModel");
 const ApiError = require("../utils/ApiError");
 
-exports.createPost = async (userId, data) => {
-  const post = await Post.create({
-    author: userId,
-    content: data.content,
-    media: data.media || "",
-  });
+exports.createPost = async (data) => {
+  // const post = await Post.create({
+  //   author: userId,
+  //   content: data.content,
+  //   media: data.media || "",
+  // });
 
-  return post;
+  return Post.create(data);
 };
 
 exports.getPost = async (postId) => {
@@ -48,7 +48,10 @@ exports.updatePost = async (postId, userId, data) => {
   }
 
   post.content = data.content ?? post.content;
-  post.image = data.image ?? post.image;
+
+  if (data.images !== undefined) {
+    post.images = data.images;
+  }
 
   await post.save();
 

@@ -30,4 +30,6 @@ router.post("/login", authController.login);
 router.post("/register", authController.register);
 router.get("/check-username/:username", checkUsernameAvailability);
 
+router.post("/google", authController.googleAuth);
+
 module.exports = router;

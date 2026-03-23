@@ -2,6 +2,8 @@ const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const generateToken = require("../utils/generateToken");
 const ApiError = require("../utils/ApiError");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 exports.register = async (req, res) => {
   try {
@@ -106,5 +108,40 @@ exports.checkUsernameAvailability = async (req, res) => {
       message: "Error checking username",
       error: error.message,
     });
+  }
+};
+
+exports.googleAuth = async (req, res, next) => {
+  try {
+    const { credential } = req.body;
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    const { email, name, picture } = payload;
+
+    let user = await user.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        email,
+        name,
+        username: email.split("@")[0],
+        avatar: picture,
+        isVerified: true,
+      });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.json({ token });
+  } catch (error) {
+    next(error);
   }
 };
