@@ -12,16 +12,22 @@ exports.createPost = async (data) => {
 };
 
 exports.getPost = async (postId) => {
-  const post = await Post.findById(postId).populate(
-    "author",
-    "username name avatar",
-  );
+  const post = await Post.findById(postId)
+    .populate("author", "username name avatar")
+    .lean();
 
   if (!post) {
     throw new ApiError(404, "Post not found");
   }
 
-  return post;
+  return {
+    ...post,
+    likes: Array.isArray(post.likes) ? post.likes : [],
+    likesCount: typeof post.likesCount === "number" ? post.likesCount : 0,
+    isLiked: Array.isArray(post.likes)
+      ? post.likes.includes(currentUserId)
+      : false,
+  };
 };
 
 exports.deletePost = async (postId, userId) => {
@@ -58,10 +64,40 @@ exports.updatePost = async (postId, userId, data) => {
   return post;
 };
 
-exports.getUserPosts = async (userId) => {
+exports.getUserPosts = async (userId, currentUserId) => {
   const posts = await Post.find({ author: userId })
     .sort({ createdAt: -1 })
-    .populate("author", "username name avatar");
+    .populate("author", "username name avatar")
+    .lean();
 
-  return { posts };
+  const updatedPosts = posts.map((post) => ({
+    ...post,
+    likes: Array.isArray(post.likes) ? post.likes : [],
+    likesCount: typeof post.likesCount === "number" ? post.likesCount : 0,
+    isLiked: Array.isArray(post.likes)
+      ? post.likes.includes(currentUserId)
+      : false,
+  }));
+
+  return { posts: updatedPosts };
+};
+
+exports.toggleLike = async (postId, userId) => {
+  const post = await Post.findById(postId);
+
+  if (!post) throw new ApiError(404, "Post not found.");
+
+  const alreadyLiked = post.likes.includes(userId);
+
+  if (alreadyLiked) {
+    post.likes = post.likes.filter((id) => id !== userId);
+    post.likesCount = Max.max(0, post.likesCount - 1);
+  } else {
+    post.likes.push(userId);
+    post.likesCount += 1;
+  }
+
+  await post.save();
+
+  return post;
 };

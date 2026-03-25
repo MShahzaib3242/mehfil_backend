@@ -53,7 +53,7 @@ app.get("/", (req, res) => {
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/admin/queues", serverAdapter.getRouter());
 app.use("/api/auth", authRoutes);
-app.use("/api/users", followRoutes);
+app.use("/api/follow", followRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/posts", likeRoutes);
 app.use("/api/posts", commentRoutes);

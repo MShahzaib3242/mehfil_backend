@@ -23,6 +23,8 @@ router.put(
   postController.updatePost,
 );
 
-router.get("/user/:id", postController.getUserPosts);
+router.get("/user/:id", authMiddleware, postController.getUserPosts);
+
+router.post("/:id/like", authMiddleware, postController.toggleLike);
 
 module.exports = router;

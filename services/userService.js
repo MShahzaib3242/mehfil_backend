@@ -16,16 +16,41 @@ exports.updateProfile = async (userId, data) => {
   return user;
 };
 
+exports.getFollowMeta = async (currentUserId, profileUserId) => {
+  const isFollowing = await Follow.exists({
+    follower: currentUserId,
+    following: profileUserId,
+  });
+
+  const followersCount = await Follow.countDocuments({
+    following: profileUserId,
+  });
+
+  const followingCount = await Follow.countDocuments({
+    follower: profileUserId,
+  });
+
+  return {
+    isFollowing: !!isFollowing,
+    followersCount,
+    followingCount,
+  };
+};
+
 exports.getSuggestedUsers = async (userId) => {
   const following = await Follow.find({ follower: userId }).select("following");
 
-  const followingIds = following.map((f) => f.following);
+  const followingIds = following.map((f) => f.following.toString());
 
   const users = await User.find({
-    _id: { $nin: [userId, ...followingIds] },
+    _id: { $ne: userId },
   })
     .select("name username avatar")
-    .limit(5);
+    .limit(5)
+    .lean();
 
-  return users;
+  return users.map((user) => ({
+    ...user,
+    isFollowing: followingIds.includes(user._id.toString()),
+  }));
 };

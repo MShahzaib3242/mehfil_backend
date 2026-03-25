@@ -18,7 +18,7 @@ exports.followUser = async (req, res, next) => {
 
 exports.unfollowUser = async (req, res, next) => {
   try {
-    const followId = req.user.id;
+    const followerId = req.user.id;
     const followingId = req.params.id;
 
     await followService.unfollowUser(followerId, followingId);

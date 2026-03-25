@@ -38,9 +38,19 @@ exports.createPost = async (req, res, next) => {
 
 exports.getPost = async (req, res, next) => {
   try {
-    const post = await postService.getPost(req.params.id);
+    const post = await postService.getPost(req.params.id, req.user.id);
 
     res.json(post);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getUserPosts = async (req, res, next) => {
+  try {
+    const posts = await postService.getUserPosts(req.params.id, req.user.id);
+
+    res.json(posts);
   } catch (error) {
     next(error);
   }
@@ -103,11 +113,11 @@ exports.updatePost = async (req, res, next) => {
   }
 };
 
-exports.getUserPosts = async (req, res, next) => {
+exports.toggleLike = async (req, res, next) => {
   try {
-    const posts = await postService.getUserPosts(req.params.id);
+    const post = await postService.toggleLike(req.params.id, req.user.id);
 
-    res.json(posts);
+    res.json(post);
   } catch (error) {
     next(error);
   }

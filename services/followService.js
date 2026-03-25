@@ -6,6 +6,8 @@ exports.followUser = async (followerId, followingId) => {
     throw new ApiError(400, "You cannot follow yourself");
   }
 
+  // console.log("Followerid", followerId);
+
   const existing = await Follow.findOne({
     follower: followerId,
     following: followingId,
@@ -14,6 +16,8 @@ exports.followUser = async (followerId, followingId) => {
   if (existing) {
     throw new ApiError(400, "Already following this user");
   }
+
+  // console.log("existing", existing);
 
   return Follow.create({
     follower: followerId,
@@ -46,4 +50,25 @@ exports.getFollowing = async (userId) => {
     "following",
     "username name avatar",
   );
+};
+
+exports.isFollowing = async (currentUserId, profileUserId) => {
+  const exists = await Follow.exists({
+    follower: currentUserId,
+    following: profileUserId,
+  });
+
+  return !!exists;
+};
+
+exports.getFollowCounts = async (userId) => {
+  const followersCount = await Follow.countDocuments({
+    following: userId,
+  });
+
+  const followingCount = await Follow.countDocuments({
+    follower: userId,
+  });
+
+  return { followersCount, followingCount };
 };

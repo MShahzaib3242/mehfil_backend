@@ -6,7 +6,13 @@ const streamifier = require("streamifier");
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
-    res.json(user);
+
+    const meta = await userService.getFollowMeta(req.user.id, req.user.id);
+
+    res.json({
+      ...user.toObject(),
+      ...meta,
+    });
   } catch (error) {
     res.status(500).json({
       message: "Error fetching user",
@@ -54,6 +60,23 @@ exports.getSuggestedUsers = async (req, res, next) => {
   try {
     const users = await userService.getSuggestedUsers(req.user.id);
     res.json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getUserProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+
+    if (!user) throw new ApiError(404, "User not found");
+
+    const meta = await userService.getFollowMeta(req.user.id, req.params.id);
+
+    res.json({
+      ...user.toObject(),
+      ...meta,
+    });
   } catch (error) {
     next(error);
   }
