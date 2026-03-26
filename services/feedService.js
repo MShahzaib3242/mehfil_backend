@@ -6,7 +6,7 @@ exports.getFeed = async (userId, page = 1, limit = 10) => {
     follower: userId,
   }).select("following");
 
-  const followingIds = following.map((f) => f.following);
+  const followingIds = following.map((f) => f.following.toString());
 
   const authorIds = [userId, ...followingIds];
 
@@ -16,10 +16,14 @@ exports.getFeed = async (userId, page = 1, limit = 10) => {
     .populate("author", "username name avatar")
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
-    .limit(limit);
+    .limit(limit)
+    .lean();
 
   return {
-    posts,
+    posts: posts.map((post) => ({
+      ...post,
+      isLiked: post.likes?.some((id) => id.toString() === userId),
+    })),
     hasFollowing: followingIds.length > 0,
   };
 };

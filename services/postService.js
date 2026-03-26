@@ -70,16 +70,19 @@ exports.getUserPosts = async (userId, currentUserId) => {
     .populate("author", "username name avatar")
     .lean();
 
-  const updatedPosts = posts.map((post) => ({
-    ...post,
-    likes: Array.isArray(post.likes) ? post.likes : [],
-    likesCount: typeof post.likesCount === "number" ? post.likesCount : 0,
-    isLiked: Array.isArray(post.likes)
-      ? post.likes.includes(currentUserId)
-      : false,
-  }));
+  // const updatedPosts = posts.map((post) => ({
+  //   ...post,
+  //   likes: Array.isArray(post.likes) ? post.likes : [],
+  //   likesCount: typeof post.likesCount === "number" ? post.likesCount : 0,
+  //   isLiked: Array.isArray(post.likes)
+  //     ? post.likes.includes(currentUserId)
+  //     : false,
+  // }));
 
-  return { posts: updatedPosts };
+  return posts.map((post) => ({
+    ...post,
+    isLiked: post.likes?.includes(currentUserId),
+  }));
 };
 
 exports.toggleLike = async (postId, userId) => {
@@ -90,14 +93,21 @@ exports.toggleLike = async (postId, userId) => {
   const alreadyLiked = post.likes.includes(userId);
 
   if (alreadyLiked) {
-    post.likes = post.likes.filter((id) => id !== userId);
-    post.likesCount = Max.max(0, post.likesCount - 1);
+    post.likes.pull(userId);
   } else {
     post.likes.push(userId);
-    post.likesCount += 1;
   }
+
+  post.likesCount = post.likes.length;
 
   await post.save();
 
-  return post;
+  const updatedPost = await Post.findById(postId)
+    .populate("author", "name username avatar")
+    .lean();
+
+  return {
+    ...updatedPost,
+    isLiked: updatedPost.likes.includes(userId),
+  };
 };
