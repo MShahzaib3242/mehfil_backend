@@ -1,4 +1,5 @@
 const Post = require("../models/postModel");
+const Comment = require("../models/commentModel");
 const ApiError = require("../utils/ApiError");
 
 exports.createPost = async (data) => {
@@ -40,6 +41,8 @@ exports.deletePost = async (postId, userId) => {
   if (post.author.toString() !== userId) {
     throw new ApiError(403, "Not Authorized");
   }
+
+  await Comment.deleteMany({ post: postId });
 
   await post.deleteOne();
 };

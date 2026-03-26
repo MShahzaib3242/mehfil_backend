@@ -18,4 +18,10 @@ router.delete(
   commentController.deleteComment,
 );
 
+router.put(
+  "/comment/:commentId",
+  authMiddleware,
+  commentController.updateComment,
+);
+
 module.exports = router;

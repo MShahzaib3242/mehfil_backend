@@ -59,6 +59,7 @@ app.use("/api/posts", likeRoutes);
 app.use("/api/posts", commentRoutes);
 app.use("/api/feed", feedRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/comments", commentRoutes);
 
 app.use(errorHandler);
 app.use(errorMiddleware);

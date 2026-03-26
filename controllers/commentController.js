@@ -21,7 +21,7 @@ exports.getPostComments = async (req, res, next) => {
   try {
     const comments = await commentService.getPostComments(req.params.postId);
 
-    res.json(comments);
+    res.json({ comments });
   } catch (error) {
     next(error);
   }
@@ -34,6 +34,20 @@ exports.deleteComment = async (req, res, next) => {
     res.json({
       message: "Comment deleted",
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateComment = async (req, res, next) => {
+  try {
+    const comment = await commentService.updateComment(
+      req.params.commentId,
+      req.user.id,
+      req.body.content,
+    );
+
+    res.json(comment);
   } catch (error) {
     next(error);
   }
