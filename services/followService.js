@@ -1,7 +1,19 @@
 const Follow = require("../models/followModel");
 const ApiError = require("../utils/ApiError");
+const Block = require("../models/blockModel");
 
 exports.followUser = async (followerId, followingId) => {
+  const blocked = await Block.findOne({
+    $or: [
+      { blocker: followerId, blocked: followingId },
+      { blocker: followingId, blocked: followerId },
+    ],
+  });
+
+  if (blocked) {
+    throw new ApiError(403, "Cannot Follow Blocked User.");
+  }
+
   if (followerId === followingId) {
     throw new ApiError(400, "You cannot follow yourself");
   }

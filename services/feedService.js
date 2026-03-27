@@ -1,5 +1,6 @@
 const Follow = require("../models/followModel");
 const Post = require("../models/postModel");
+const Block = require("../models/blockModel");
 
 exports.getFeed = async (userId, page = 1, limit = 10) => {
   const following = await Follow.find({
@@ -8,7 +9,17 @@ exports.getFeed = async (userId, page = 1, limit = 10) => {
 
   const followingIds = following.map((f) => f.following.toString());
 
-  const authorIds = [userId, ...followingIds];
+  const blocks = await Block.find({
+    $or: [{ blocker: userId }, { blocked: userId }],
+  });
+
+  const blockedIds = blocks.map((b) =>
+    b.blocker.toString() === userId ? b.blocked : b.blocker,
+  );
+
+  const authorIds = [userId, ...followingIds].filter(
+    (id) => !blockedIds.includes(id.toString()),
+  );
 
   const posts = await Post.find({
     author: { $in: authorIds },

@@ -1,5 +1,7 @@
 const Follow = require("../models/followModel");
 const User = require("../models/userModel");
+const Block = require("../models/blockModel");
+const ApiError = require("../utils/ApiError");
 
 exports.updateProfile = async (userId, data) => {
   const user = await User.findById(userId);
@@ -42,15 +44,50 @@ exports.getSuggestedUsers = async (userId) => {
 
   const followingIds = following.map((f) => f.following.toString());
 
+  const blocks = await Block.find({
+    $or: [{ blocker: userId }, { blocked: userId }],
+  });
+
+  const blockedIds = blocks.map((b) =>
+    b.blocker.toString() === userId ? b.blocked : b.blocker,
+  );
+
   const users = await User.find({
-    _id: { $ne: userId },
+    _id: { $nin: [userId, ...followingIds, ...blockedIds] },
+    isActive: true,
   })
     .select("name username avatar")
     .limit(5)
     .lean();
 
-  return users.map((user) => ({
-    ...user,
-    isFollowing: followingIds.includes(user._id.toString()),
-  }));
+  return users;
+};
+
+exports.getUserProfile = async (userId, currentUserId) => {
+  const block = await Block.findOne({
+    $or: [
+      { blocker: currentUserId, blocked: userId },
+      { blocker: userId, blocked: currentUserId },
+    ],
+  });
+
+  if (block) {
+    throw new ApiError(403, "User not accessible");
+  }
+
+  const user = await User.findById(userId).select("-password");
+
+  if (!user) {
+    throw new ApiError(404, "User Not Found");
+  }
+
+  const isBlocked = await Block.exists({
+    blocker: currentUserId,
+    blocked: userId,
+  });
+
+  return {
+    ...user.toObject(),
+    isBlocked: !!isBlocked,
+  };
 };

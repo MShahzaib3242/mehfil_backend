@@ -67,14 +67,12 @@ exports.getSuggestedUsers = async (req, res, next) => {
 
 exports.getUserProfile = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
-
-    if (!user) throw new ApiError(404, "User not found");
+    const user = await userService.getUserProfile(req.params.id, req.user.id);
 
     const meta = await userService.getFollowMeta(req.user.id, req.params.id);
 
     res.json({
-      ...user.toObject(),
+      ...user,
       ...meta,
     });
   } catch (error) {

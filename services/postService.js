@@ -1,6 +1,7 @@
 const Post = require("../models/postModel");
 const Comment = require("../models/commentModel");
 const ApiError = require("../utils/ApiError");
+const Block = require("../models/blockModel");
 
 exports.createPost = async (data) => {
   // const post = await Post.create({
@@ -68,19 +69,21 @@ exports.updatePost = async (postId, userId, data) => {
 };
 
 exports.getUserPosts = async (userId, currentUserId) => {
+  const isBlocked = await Block.findOne({
+    $or: [
+      { blocker: currentUserId, blocked: userId },
+      { blocker: userId, blocked: currentUserId },
+    ],
+  });
+
+  if (isBlocked) {
+    return [];
+  }
+
   const posts = await Post.find({ author: userId })
     .sort({ createdAt: -1 })
     .populate("author", "username name avatar")
     .lean();
-
-  // const updatedPosts = posts.map((post) => ({
-  //   ...post,
-  //   likes: Array.isArray(post.likes) ? post.likes : [],
-  //   likesCount: typeof post.likesCount === "number" ? post.likesCount : 0,
-  //   isLiked: Array.isArray(post.likes)
-  //     ? post.likes.includes(currentUserId)
-  //     : false,
-  // }));
 
   return posts.map((post) => ({
     ...post,
