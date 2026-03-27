@@ -8,8 +8,8 @@ router.post("/:id/follow", authMiddleware, followController.followUser);
 
 router.delete("/:id/unfollow", authMiddleware, followController.unfollowUser);
 
-router.get("/:id/followers", followController.getFollowers);
+router.get("/:id/followers", authMiddleware, followController.getFollowers);
 
-router.get("/:id/following", followController.getFollowing);
+router.get("/:id/following", authMiddleware, followController.getFollowing);
 
 module.exports = router;

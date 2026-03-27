@@ -33,7 +33,10 @@ exports.unfollowUser = async (req, res, next) => {
 
 exports.getFollowers = async (req, res, next) => {
   try {
-    const followers = await followService.getFollowers(req.params.id);
+    const followers = await followService.getFollowers(
+      req.params.id,
+      req.user.id,
+    );
 
     res.json({ followers });
   } catch (error) {
@@ -43,7 +46,10 @@ exports.getFollowers = async (req, res, next) => {
 
 exports.getFollowing = async (req, res, next) => {
   try {
-    const following = await followService.getFollowing(req.params.id);
+    const following = await followService.getFollowing(
+      req.params.id,
+      req.user.id,
+    );
     res.json({ following });
   } catch (error) {
     next(error);

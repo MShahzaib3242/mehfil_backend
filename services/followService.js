@@ -38,18 +38,44 @@ exports.unfollowUser = async (followerId, followingId) => {
   return true;
 };
 
-exports.getFollowers = async (userId) => {
-  return Follow.find({ following: userId }).populate(
-    "follower",
-    "username name avatar",
-  );
+exports.getFollowers = async (userId, currentUserId) => {
+  const followers = await Follow.find({ following: userId })
+    .populate("follower", "username name avatar")
+    .lean();
+
+  const currentUserFollowing = await Follow.find({
+    follower: currentUserId,
+  }).select("following");
+
+  const followingIds = currentUserFollowing.map((f) => f.following.toString());
+
+  return followers.map((f) => ({
+    ...f,
+    follower: {
+      ...f.follower,
+      isFollowing: followingIds.includes(f.follower._id.toString()),
+    },
+  }));
 };
 
-exports.getFollowing = async (userId) => {
-  return Follow.find({ follower: userId }).populate(
-    "following",
-    "username name avatar",
-  );
+exports.getFollowing = async (userId, currentUserId) => {
+  const following = await Follow.find({ follower: userId })
+    .populate("following", "username name avatar")
+    .lean();
+
+  const currentUserFollowing = await Follow.find({
+    follower: currentUserId,
+  }).select("following");
+
+  const followingIds = currentUserFollowing.map((f) => f.following.toString());
+
+  return following.map((f) => ({
+    ...f,
+    following: {
+      ...f.following,
+      isFollowing: followingIds.includes(f.following._id.toString()),
+    },
+  }));
 };
 
 exports.isFollowing = async (currentUserId, profileUserId) => {
