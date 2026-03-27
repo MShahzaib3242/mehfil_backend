@@ -80,6 +80,20 @@ exports.getUserProfile = async (req, res, next) => {
   }
 };
 
+exports.changePassword = async (req, res, next) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    await userService.changePassword(req.user.id, oldPassword, newPassword);
+
+    res.json({
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.deactivateAccount = async (req, res, next) => {
   try {
     await userService.deactivateAccount(req.user.id);

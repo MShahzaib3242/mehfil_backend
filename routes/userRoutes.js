@@ -6,6 +6,7 @@ const {
   getSuggestedUsers,
   updateProfile,
   getUserProfile,
+  changePassword,
   deactivateAccount,
 } = require("../controllers/userController");
 const upload = require("../middleware/uploadMiddleware");
@@ -16,6 +17,8 @@ router.put("/me", authMiddleware, upload.single("avatar"), updateProfile);
 
 router.get("/suggested", authMiddleware, getSuggestedUsers);
 router.get("/:id", authMiddleware, getUserProfile);
+
+router.post("/change-password", authMiddleware, changePassword);
 
 router.post("/deactivate", authMiddleware, deactivateAccount);
 

@@ -23,6 +23,15 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
+    if (
+      user.passwordChangedAt &&
+      decoded.iat < Math.floor(user.passwordChangedAt.getTime() / 1000)
+    ) {
+      return res.status(401).json({
+        message: "PASSWORD_CHANGED",
+      });
+    }
+
     req.user = {
       id: user._id,
     };

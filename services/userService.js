@@ -2,6 +2,7 @@ const Follow = require("../models/followModel");
 const User = require("../models/userModel");
 const Block = require("../models/blockModel");
 const ApiError = require("../utils/ApiError");
+const bcrypt = require("bcrypt");
 
 exports.updateProfile = async (userId, data) => {
   const user = await User.findById(userId);
@@ -90,6 +91,28 @@ exports.getUserProfile = async (userId, currentUserId) => {
     ...user.toObject(),
     isBlocked: !!isBlocked,
   };
+};
+
+exports.changePassword = async (userId, oldPassword, newPassword) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+  if (!isMatch) {
+    throw new ApiError(400, "Old password is incorrect");
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  user.password = hashedPassword;
+  user.passwordChangedAt = new Date();
+  await user.save();
+
+  return true;
 };
 
 exports.deactivateAccount = async (userId) => {
