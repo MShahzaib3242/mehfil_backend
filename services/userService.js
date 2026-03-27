@@ -91,3 +91,14 @@ exports.getUserProfile = async (userId, currentUserId) => {
     isBlocked: !!isBlocked,
   };
 };
+
+exports.deactivateAccount = async (userId) => {
+  const user = await User.findById(userId);
+
+  if (!user) throw new ApiError(404, "User Not Found");
+
+  user.isActive = false;
+  await user.save();
+
+  return true;
+};

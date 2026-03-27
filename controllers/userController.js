@@ -79,3 +79,12 @@ exports.getUserProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.deactivateAccount = async (req, res, next) => {
+  try {
+    await userService.deactivateAccount(req.user.id);
+    res.json({ message: "Account deactivated successfully" });
+  } catch (error) {
+    next(error);
+  }
+};

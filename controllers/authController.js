@@ -58,6 +58,10 @@ exports.login = async (req, res) => {
       });
     }
 
+    if (!user.isActive) {
+      throw new ApiError(403, "ACCOUNT_DEACTIVATED");
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -73,6 +77,12 @@ exports.login = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        message: error.message,
+      });
+    }
+
     res.status(500).json({
       message: "Error logging in.",
       error: error.message,
