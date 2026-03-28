@@ -15,16 +15,17 @@ const commentRoutes = require("./routes/commentRoutes");
 const feedRoutes = require("./routes/feedRoutes");
 const userRoutes = require("./routes/userRoutes");
 const blockRoutes = require("./routes/blockRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const errorMiddleware = require("./middleware/errorMiddleware");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
-app.use((req, res, next) => {
-  console.log("GLOBAL HIT:", req.method, req.url);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log("GLOBAL HIT:", req.method, req.url);
+//   next();
+// });
 
 app.use(express.json());
 app.use(helmet());
@@ -38,19 +39,20 @@ app.use(cors({ origin: "*" }));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 50,
   message: {
     message:
       "Too many requests from this IP, please try again after 15 minutes.",
   },
 });
 
-app.use(limiter);
+app.use("/api/auth", limiter);
 
 app.get("/", (req, res) => {
   res.send("Backend API Running");
 });
 
+//Routes
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/admin/queues", serverAdapter.getRouter());
 app.use("/api/auth", authRoutes);
@@ -62,6 +64,7 @@ app.use("/api/feed", feedRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/block", blockRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use(errorHandler);
 app.use(errorMiddleware);

@@ -12,4 +12,10 @@ router.get("/:id/followers", authMiddleware, followController.getFollowers);
 
 router.get("/:id/following", authMiddleware, followController.getFollowing);
 
+router.delete(
+  "/remove/:followerId",
+  authMiddleware,
+  followController.removeFollower,
+);
+
 module.exports = router;

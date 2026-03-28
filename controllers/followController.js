@@ -55,3 +55,13 @@ exports.getFollowing = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.removeFollower = async (req, res, next) => {
+  try {
+    await followService.removeFollower(req.user.id, req.params.followerId);
+
+    res.json({ message: "Follower removed" });
+  } catch (error) {
+    next(error);
+  }
+};

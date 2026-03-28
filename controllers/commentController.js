@@ -19,7 +19,10 @@ exports.createComment = async (req, res, next) => {
 
 exports.getPostComments = async (req, res, next) => {
   try {
-    const comments = await commentService.getPostComments(req.params.postId);
+    const comments = await commentService.getPostComments(
+      req.params.postId,
+      req.user?.id,
+    );
 
     res.json({ comments });
   } catch (error) {
@@ -48,6 +51,19 @@ exports.updateComment = async (req, res, next) => {
     );
 
     res.json(comment);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.toggleCommentLike = async (req, res, next) => {
+  try {
+    const result = await commentService.toggleCommentLike(
+      req.params.commentId,
+      req.user.id,
+    );
+
+    res.json(result);
   } catch (error) {
     next(error);
   }

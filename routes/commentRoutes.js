@@ -10,7 +10,11 @@ router.post(
   commentController.createComment,
 );
 
-router.get("/:postId/comments", commentController.getPostComments);
+router.get(
+  "/:postId/comments",
+  authMiddleware,
+  commentController.getPostComments,
+);
 
 router.delete(
   "/comment/:commentId",
@@ -22,6 +26,12 @@ router.put(
   "/comment/:commentId",
   authMiddleware,
   commentController.updateComment,
+);
+
+router.post(
+  "/:commentId/like",
+  authMiddleware,
+  commentController.toggleCommentLike,
 );
 
 module.exports = router;

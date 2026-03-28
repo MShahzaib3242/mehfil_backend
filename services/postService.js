@@ -2,6 +2,7 @@ const Post = require("../models/postModel");
 const Comment = require("../models/commentModel");
 const ApiError = require("../utils/ApiError");
 const Block = require("../models/blockModel");
+const { createNotification } = require("./notificationService");
 
 exports.createPost = async (data) => {
   // const post = await Post.create({
@@ -13,7 +14,7 @@ exports.createPost = async (data) => {
   return Post.create(data);
 };
 
-exports.getPost = async (postId) => {
+exports.getPost = async (postId, currentUserId) => {
   const post = await Post.findById(postId)
     .populate("author", "username name avatar")
     .lean();
@@ -102,6 +103,17 @@ exports.toggleLike = async (postId, userId) => {
     post.likes.pull(userId);
   } else {
     post.likes.push(userId);
+
+    if (post.author.toString() !== userId.toString()) {
+      console.log("Like Notification Triggered");
+
+      await createNotification({
+        recipient: post.author,
+        sender: userId,
+        type: "like",
+        post: post._id,
+      });
+    }
   }
 
   post.likesCount = post.likes.length;
@@ -114,6 +126,8 @@ exports.toggleLike = async (postId, userId) => {
 
   return {
     ...updatedPost,
-    isLiked: updatedPost.likes.includes(userId),
+    isLiked: updatedPost.likes.some(
+      (id) => id.toString() === userId.toString(),
+    ),
   };
 };

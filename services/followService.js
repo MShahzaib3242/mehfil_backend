@@ -1,6 +1,7 @@
 const Follow = require("../models/followModel");
 const ApiError = require("../utils/ApiError");
 const Block = require("../models/blockModel");
+const { createNotification } = require("./notificationService");
 
 exports.followUser = async (followerId, followingId) => {
   const blocked = await Block.findOne({
@@ -29,7 +30,11 @@ exports.followUser = async (followerId, followingId) => {
     throw new ApiError(400, "Already following this user");
   }
 
-  // console.log("existing", existing);
+  await createNotification({
+    recipient: followingId,
+    sender: followerId,
+    type: "follow",
+  });
 
   return Follow.create({
     follower: followerId,
@@ -109,4 +114,17 @@ exports.getFollowCounts = async (userId) => {
   });
 
   return { followersCount, followingCount };
+};
+
+exports.removeFollower = async (userId, followerId) => {
+  const relation = await Follow.findOneAndDelete({
+    follower: followerId,
+    following: userId,
+  });
+
+  if (!relation) {
+    throw new ApiError(404, "Follower Not Found");
+  }
+
+  return true;
 };
