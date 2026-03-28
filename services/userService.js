@@ -125,3 +125,14 @@ exports.deactivateAccount = async (userId) => {
 
   return true;
 };
+
+exports.getActiveUsers = async () => {
+  const users = await User.find({ isActive: true })
+    .select("name username avatar lastSeen")
+    .lean();
+
+  return users.map((user) => ({
+    ...user,
+    inOnline: global.onlineUsers.has(user._id.toString()),
+  }));
+};

@@ -102,3 +102,12 @@ exports.deactivateAccount = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getActiveUsers = async (req, res, next) => {
+  try {
+    const users = await userService.getActiveUsers();
+    res.json(users);
+  } catch (error) {
+    next(error);
+  }
+};

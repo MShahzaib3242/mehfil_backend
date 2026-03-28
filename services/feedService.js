@@ -30,10 +30,12 @@ exports.getFeed = async (userId, page = 1, limit = 10) => {
     .limit(limit)
     .lean();
 
+  const filteredPosts = posts.filter((post) => post.author !== null);
+
   return {
-    posts: posts.map((post) => ({
+    posts: filteredPosts.map((post) => ({
       ...post,
-      isLiked: post.likes?.some((id) => id.toString() === userId),
+      isLiked: post.likes?.some((id) => id.toString() === userId.toString()),
     })),
     hasFollowing: followingIds.length > 0,
   };
