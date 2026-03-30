@@ -5,6 +5,7 @@ const app = require("./app");
 const connectDB = require("./config/db");
 const { Server } = require("socket.io");
 const User = require("./models/userModel");
+const Message = require("./models/messageModel");
 
 const PORT = process.env.PORT || 3000;
 
@@ -28,7 +29,10 @@ io.on("connection", (socket) => {
   console.log("User Connected: ", socket.id);
 
   socket.on("register", (userId) => {
-    onlineUsers.set(userId, socket.id);
+    console.log("Registered:", userId);
+    onlineUsers.set(userId.toString(), socket.id);
+
+    console.log("Online Users:", onlineUsers);
 
     // Emit active users
     io.emit("activeUsersUpdate", [...onlineUsers.keys()]);
@@ -49,6 +53,35 @@ io.on("connection", (socket) => {
 
     //Emit Update Again
     io.emit("activeUsersUpdate", [...onlineUsers.keys()]);
+  });
+
+  socket.on("sendMessage", async ({ sender, receiver, text }) => {
+    try {
+      if (!sender || !receiver || !text) return;
+
+      const message = await Message.create({
+        sender,
+        receiver,
+        text,
+      }).then((msg) => msg.populate("sender", "name avatar username"));
+
+      const receiverSocket = onlineUsers.get(receiver.toString());
+      const senderSocket = onlineUsers.get(sender.toString());
+
+      console.log("Sending message:");
+      console.log("Sender:", sender);
+      console.log("Receiver:", receiver);
+      console.log("Receiver Socket:", receiverSocket);
+
+      if (receiverSocket) {
+        io.to(receiverSocket).emit("newMessage", message);
+      }
+      if (senderSocket) {
+        io.to(senderSocket).emit("newMessage", message);
+      }
+    } catch (error) {
+      console.error("Message Error:", error);
+    }
   });
 });
 

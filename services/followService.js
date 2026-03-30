@@ -70,7 +70,7 @@ exports.getFollowers = async (userId, currentUserId) => {
     ...f,
     follower: {
       ...f.follower,
-      isFollowing: followingIds.includes(f.follower._id.toString()),
+      isFollowing: followingIds.includes(f.follower?._id.toString()),
     },
   }));
 };
@@ -90,7 +90,7 @@ exports.getFollowing = async (userId, currentUserId) => {
     ...f,
     following: {
       ...f.following,
-      isFollowing: followingIds.includes(f.following._id.toString()),
+      isFollowing: followingIds.includes(f.following?._id.toString()),
     },
   }));
 };
