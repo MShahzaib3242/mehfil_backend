@@ -26,13 +26,9 @@ const onlineUsers = new Map();
 global.onlineUsers = onlineUsers;
 
 io.on("connection", (socket) => {
-  console.log("User Connected: ", socket.id);
-
   socket.on("register", (userId) => {
     console.log("Registered:", userId);
     onlineUsers.set(userId.toString(), socket.id);
-
-    console.log("Online Users:", onlineUsers);
 
     // Emit active users
     io.emit("activeUsersUpdate", [...onlineUsers.keys()]);
@@ -68,11 +64,6 @@ io.on("connection", (socket) => {
       const receiverSocket = onlineUsers.get(receiver.toString());
       const senderSocket = onlineUsers.get(sender.toString());
 
-      console.log("Sending message:");
-      console.log("Sender:", sender);
-      console.log("Receiver:", receiver);
-      console.log("Receiver Socket:", receiverSocket);
-
       if (receiverSocket) {
         io.to(receiverSocket).emit("newMessage", message);
       }
@@ -81,6 +72,22 @@ io.on("connection", (socket) => {
       }
     } catch (error) {
       console.error("Message Error:", error);
+    }
+  });
+
+  socket.on("typing", ({ sender, receiver }) => {
+    const receiverSocket = onlineUsers.get(receiver.toString());
+
+    if (receiverSocket) {
+      io.to(receiverSocket).emit("typing", { sender });
+    }
+  });
+
+  socket.on("stopTyping", ({ sender, receiver }) => {
+    const receiverSocket = onlineUsers.get(receiver.toString());
+
+    if (receiverSocket) {
+      io.to(receiverSocket).emit("stopTyping", { sender });
     }
   });
 });
