@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Message = require("../models/messageModel");
 
 exports.getMessages = async (userId, otherUserId) => {
@@ -46,4 +47,16 @@ exports.getConversations = async (userId) => {
     (a, b) =>
       new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt),
   );
+};
+
+exports.deleteConversation = async (userId, otherUserId) => {
+  const userObjectId = new mongoose.Types.ObjectId(userId);
+  const otherObjectId = new mongoose.Types.ObjectId(otherUserId);
+
+  const result = await Message.deleteMany({
+    sender: { $in: [userObjectId, otherObjectId] },
+    receiver: { $in: [userObjectId, otherObjectId] },
+  });
+
+  return true;
 };

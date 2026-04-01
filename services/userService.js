@@ -65,14 +65,12 @@ exports.getSuggestedUsers = async (userId) => {
 };
 
 exports.getUserProfile = async (userId, currentUserId) => {
-  const block = await Block.findOne({
-    $or: [
-      { blocker: currentUserId, blocked: userId },
-      { blocker: userId, blocked: currentUserId },
-    ],
+  const blockedByOther = await Block.findOne({
+    blocker: userId,
+    blocked: currentUserId,
   });
 
-  if (block) {
+  if (blockedByOther) {
     throw new ApiError(403, "User not accessible");
   }
 
@@ -126,8 +124,34 @@ exports.deactivateAccount = async (userId) => {
   return true;
 };
 
-exports.getActiveUsers = async () => {
-  const users = await User.find({ isActive: true })
+exports.getActiveUsers = async (currentUserId) => {
+  // Get Users I follow
+  const following = await Follow.find({
+    follower: currentUserId,
+  }).select("following");
+
+  const followingIds = following.map((f) => f.following);
+
+  if (!followingIds.length) {
+    return [];
+  }
+
+  const blocks = await Block.find({
+    $or: [{ blocker: currentUserId }, { blocked: currentUserId }],
+  });
+
+  const blockedIds = blocks.map((b) =>
+    b.blocker.toString() === currentUserId.toString() ? b.blocked : b.blocker,
+  );
+
+  // Fetch only the users you follow
+  const users = await User.find({
+    _id: {
+      $in: followingIds,
+      ...(blockedIds.length ? { $ne: blockedIds } : {}),
+    },
+    isActive: true,
+  })
     .select("name username avatar lastSeen")
     .lean();
 

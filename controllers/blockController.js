@@ -1,4 +1,5 @@
 const blockService = require("../services/blockService");
+const Block = require("../models/blockModel");
 
 exports.blockUser = async (req, res, next) => {
   try {
@@ -22,6 +23,19 @@ exports.getBlockedUsers = async (req, res, next) => {
   try {
     const users = await blockService.getBlockedUsers(req.user.id);
     res.json({ users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getBlockStatus = async (req, res, next) => {
+  try {
+    const result = await blockService.getBlockStatus(
+      req.user.id,
+      req.params.userId,
+    );
+
+    res.json(result);
   } catch (error) {
     next(error);
   }

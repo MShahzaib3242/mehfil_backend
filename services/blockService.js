@@ -1,5 +1,6 @@
 const Block = require("../models/blockModel");
 const ApiError = require("../utils/ApiError");
+const Follow = require("../models/followModel");
 
 exports.blockUser = async (blockerId, blockedId) => {
   if (blockerId === blockedId) {
@@ -11,12 +12,21 @@ exports.blockUser = async (blockerId, blockedId) => {
     blocked: blockedId,
   });
 
-  if (existing) return existing;
+  if (!existing) {
+    await Block.create({
+      blocker: blockerId,
+      blocked: blockedId,
+    });
+  }
 
-  return Block.create({
-    blocker: blockerId,
-    blocked: blockedId,
+  await Follow.deleteMany({
+    $or: [
+      { follower: blockerId, following: blockedId },
+      { follower: blockedId, following: blockerId },
+    ],
   });
+
+  return true;
 };
 
 exports.unblockUser = async (blockerId, blockedId) => {
@@ -32,4 +42,19 @@ exports.getBlockedUsers = async (userId) => {
   return Block.find({ blocker: userId })
     .populate("blocked", "username name avatar")
     .lean();
+};
+
+exports.getBlockStatus = async (currentUserId, otherUserId) => {
+  const block = await Block.findOne({
+    $or: [
+      { blocker: currentUserId, blocked: otherUserId },
+      { blocker: otherUserId, blocked: currentUserId },
+    ],
+  });
+
+  return {
+    isBlocked: !!block,
+    blockedByMe: block?.blocker?.toString() === currentUserId.toString(),
+    blockedByOther: block?.blocker?.toString() === otherUserId.toString(),
+  };
 };

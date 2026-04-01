@@ -21,3 +21,13 @@ exports.getConversations = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.deleteConversation = async (req, res, next) => {
+  try {
+    await messageService.deleteConversation(req.user.id, req.params.userId);
+
+    res.json({ message: "Conversation Deleted" });
+  } catch (error) {
+    next(error);
+  }
+};

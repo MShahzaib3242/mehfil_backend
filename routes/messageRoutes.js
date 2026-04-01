@@ -7,4 +7,6 @@ router.get("/:userId", authMiddleware, messageController.getMessages);
 
 router.get("/", authMiddleware, messageController.getConversations);
 
+router.delete("/:userId", authMiddleware, messageController.deleteConversation);
+
 module.exports = router;

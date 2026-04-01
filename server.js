@@ -6,6 +6,7 @@ const connectDB = require("./config/db");
 const { Server } = require("socket.io");
 const User = require("./models/userModel");
 const Message = require("./models/messageModel");
+const Block = require("./models/blockModel");
 
 const PORT = process.env.PORT || 3000;
 
@@ -39,8 +40,15 @@ io.on("connection", (socket) => {
       if (socketId === socket.id) {
         onlineUsers.delete(userId);
 
-        await User.findByIdAndUpdate(userId, {
-          lastSeen: new Date(),
+        const updatedUser = await User.findByIdAndUpdate(
+          userId,
+          { lastSeen: new Date() },
+          { new: true },
+        ).select("_id lastSeen");
+
+        io.emit("userLastSeen", {
+          userId,
+          lastSeen: updatedUser.lastSeen,
         });
 
         break;
@@ -54,6 +62,21 @@ io.on("connection", (socket) => {
   socket.on("sendMessage", async ({ sender, receiver, text }) => {
     try {
       if (!sender || !receiver || !text) return;
+
+      const isBlocked = await Block.findOne({
+        $or: [
+          { blocker: sender, blocked: receiver },
+          { blocker: receiver, blocked: sender },
+        ],
+      });
+
+      if (isBlocked) {
+        socket.emit("messageError", {
+          message: "You cannot send message to this user yet.",
+        });
+
+        return;
+      }
 
       const message = await Message.create({
         sender,

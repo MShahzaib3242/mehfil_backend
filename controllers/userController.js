@@ -105,7 +105,7 @@ exports.deactivateAccount = async (req, res, next) => {
 
 exports.getActiveUsers = async (req, res, next) => {
   try {
-    const users = await userService.getActiveUsers();
+    const users = await userService.getActiveUsers(req.user.id);
     res.json(users);
   } catch (error) {
     next(error);
