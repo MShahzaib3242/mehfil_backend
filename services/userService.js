@@ -148,7 +148,7 @@ exports.getActiveUsers = async (currentUserId) => {
   const users = await User.find({
     _id: {
       $in: followingIds,
-      ...(blockedIds.length ? { $ne: blockedIds } : {}),
+      ...(blockedIds.length ? { $nin: blockedIds } : {}),
     },
     isActive: true,
   })
@@ -157,6 +157,6 @@ exports.getActiveUsers = async (currentUserId) => {
 
   return users.map((user) => ({
     ...user,
-    inOnline: global.onlineUsers.has(user._id.toString()),
+    isOnline: global.onlineUsers.has(user._id.toString()),
   }));
 };
