@@ -105,8 +105,6 @@ exports.toggleLike = async (postId, userId) => {
     post.likes.push(userId);
 
     if (post.author.toString() !== userId.toString()) {
-      console.log("Like Notification Triggered");
-
       await createNotification({
         recipient: post.author,
         sender: userId,
