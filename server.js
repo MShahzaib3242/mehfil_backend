@@ -82,14 +82,18 @@ io.on("connection", (socket) => {
         sender,
         receiver,
         text,
+        delivered: false,
       }).then((msg) => msg.populate("sender", "name avatar username"));
 
       const receiverSocket = onlineUsers.get(receiver.toString());
-      const senderSocket = onlineUsers.get(sender.toString());
-
       if (receiverSocket) {
+        message.delivered = true;
+        await message.save();
+
         io.to(receiverSocket).emit("newMessage", message);
       }
+
+      const senderSocket = onlineUsers.get(sender.toString());
       if (senderSocket) {
         io.to(senderSocket).emit("newMessage", message);
       }
@@ -111,6 +115,25 @@ io.on("connection", (socket) => {
 
     if (receiverSocket) {
       io.to(receiverSocket).emit("stopTyping", { sender });
+    }
+  });
+
+  socket.on("markSeen", async ({ userId, chatUserId }) => {
+    await Message.updateMany(
+      {
+        sender: chatUserId,
+        receiver: userId,
+        seen: false,
+      },
+      { seen: true },
+    );
+
+    const senderSocket = onlineUsers.get(chatUserId.toString());
+
+    if (senderSocket) {
+      io.to(senderSocket).emit("messagesSeen", {
+        userId: userId,
+      });
     }
   });
 });
