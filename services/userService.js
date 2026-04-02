@@ -70,14 +70,22 @@ exports.getUserProfile = async (userId, currentUserId) => {
     blocked: currentUserId,
   });
 
-  if (blockedByOther) {
-    throw new ApiError(403, "User not accessible");
-  }
-
   const user = await User.findById(userId).select("-password");
 
   if (!user) {
     throw new ApiError(404, "User Not Found");
+  }
+
+  if (blockedByOther) {
+    return {
+      _id: user._id,
+      name: user.name,
+      username: user.username,
+      avatar: user.avatar,
+
+      isBlockedByOther: true,
+      blockedAt: blockedByOther.createdAt,
+    };
   }
 
   const isBlocked = await Block.exists({
@@ -88,6 +96,7 @@ exports.getUserProfile = async (userId, currentUserId) => {
   return {
     ...user.toObject(),
     isBlocked: !!isBlocked,
+    isBlockedByOther: false,
   };
 };
 
