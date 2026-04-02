@@ -40,7 +40,7 @@ exports.deletePost = async (postId, userId) => {
     throw new ApiError(404, "Post not found");
   }
 
-  if (post.author.toString() !== userId) {
+  if (post.author.toString() !== userId.toString()) {
     throw new ApiError(403, "Not Authorized");
   }
 
